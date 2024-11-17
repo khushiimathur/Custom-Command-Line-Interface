@@ -1,4 +1,4 @@
-out/bish: out/ls out/date out/cat out/mkdir out/rm src/shell.c
+out/bish: out/list out/date out/display out/make_dir out/remove_dir src/shell.c
 	@mkdir -p out
 	@gcc -pthread -o out/shell src/shell.c
 	@echo "\nComplied the shell \n"
@@ -6,10 +6,10 @@ out/bish: out/ls out/date out/cat out/mkdir out/rm src/shell.c
 	@echo "Run ./out/shell to start the shell"
 	@echo "Or use 'make run' to run the shell\n"
 
-out/ls: src/ls.c
+out/list: src/list.c
 	@mkdir -p out
-	@gcc -o out/ls src/ls.c
-	@echo "Compiled ls"
+	@gcc -o out/list src/list.c
+	@echo "Compiled list"
 
 
 out/date: src/date.c
@@ -17,20 +17,20 @@ out/date: src/date.c
 	@gcc -o out/date src/date.c
 	@echo "Compiled date"
 
-out/cat: src/cat.c
+out/display: src/display.c
 	@mkdir -p out
-	@gcc -o out/cat src/cat.c
-	@echo "Compiled cat"
+	@gcc -o out/display src/display.c
+	@echo "Compiled display"
 
-out/mkdir: src/mkdir.c
+out/make_dir: src/make_dir.c
 	@mkdir -p out
-	@gcc -o out/mkdir src/mkdir.c
-	@echo "Compiled mkdir"
+	@gcc -o out/make_dir src/make_dir.c
+	@echo "Compiled make_dir"
 
-out/rm: src/rm.c
+out/remove_dir: src/remove_dir.c
 	@mkdir -p out
-	@gcc -o out/rm src/rm.c
-	@echo "Compiled rm"
+	@gcc -o out/remove_dir src/remove_dir.c
+	@echo "Compiled remove_dir"
 	
 
 clean:

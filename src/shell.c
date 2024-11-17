@@ -101,23 +101,23 @@ int main(int argc, char** argv) {
         token = strtok(NULL, "/");
     }
 
-    char* cat = (char*)malloc(sizeof(char) * FILENAME_MAX);
+    char* display = (char*)malloc(sizeof(char) * FILENAME_MAX);
     char* date = (char*)malloc(sizeof(char) * FILENAME_MAX);
-    char* ls = (char*)malloc(sizeof(char) * FILENAME_MAX);
-    char* mkdir = (char*)malloc(sizeof(char) * FILENAME_MAX);
-    char* rm = (char*)malloc(sizeof(char) * FILENAME_MAX);
+    char* list = (char*)malloc(sizeof(char) * FILENAME_MAX);
+    char* make_dir = (char*)malloc(sizeof(char) * FILENAME_MAX);
+    char* remove_dir = (char*)malloc(sizeof(char) * FILENAME_MAX);
 
-    strcpy(cat, absPath);
+    strcpy(display, absPath);
     strcpy(date, absPath);
-    strcpy(ls, absPath);
-    strcpy(mkdir, absPath);
-    strcpy(rm, absPath);
+    strcpy(list, absPath);
+    strcpy(make_dir, absPath);
+    strcpy(remove_dir, absPath);
 
-    strcat(cat, "cat");
+    strcat(display, "display");
     strcat(date, "date");
-    strcat(ls, "ls");
-    strcat(mkdir, "mkdir");
-    strcat(rm, "rm");
+    strcat(list, "list");
+    strcat(make_dir, "make_dir");
+    strcat(remove_dir, "remove_dir");
 
 
     ////////////////////////////// Main execution //////////////////////////////
@@ -125,16 +125,7 @@ int main(int argc, char** argv) {
     while (run) {
         prompt();
 
-        // Checking the use of threads
-        int useThreads = 0;
-        if (strcmp(input[0], "&t") == 0) {
-            useThreads = 1;
-            for (int i = 1; i < NUM_WORDS; i++) {
-                strcpy(input[i - 1], input[i]);
-            }
-            input[NUM_WORDS - 1][0] = '\0';
-        }
-
+        
         ////////////////////////// Internal Commands ///////////////////////////
         // exit
         if (strcmp(input[0], "exit") == 0) {
@@ -148,7 +139,7 @@ int main(int argc, char** argv) {
         }
 
         // cd
-        else if (strcmp(input[0], "cd") == 0) {
+        else if (strcmp(input[0], "change_dir") == 0) {
             if (strcmp(input[1], "-P") == 0) {
                 if (chdir(input[1]) != 0) {
                     printf(RED BOLD "Error: " RESET);
@@ -164,7 +155,7 @@ int main(int argc, char** argv) {
         }
 
         // pwd
-        else if (strcmp(input[0], "pwd") == 0) {
+        else if (strcmp(input[0], "working_dir") == 0) {
             int flag = 1;
             for (int i = 1; i < NUM_WORDS && input[i][0] != '\0'; i++) {
                 if (strcmp(input[1], "-P") == 0) {
@@ -211,7 +202,7 @@ int main(int argc, char** argv) {
         }
         ////////////////////////// External Commands ///////////////////////////
         // ls
-        else if (strcmp(input[0], "ls") == 0) {
+        else if (strcmp(input[0], "list") == 0) {
             char* option = (char*)malloc(sizeof(char) * WORD_LEN);
             char* _path = (char*)malloc(sizeof(char) * WORD_LEN);
             char* path = (char*)malloc(sizeof(char) * WORD_LEN);
@@ -258,30 +249,15 @@ int main(int argc, char** argv) {
                 strcpy(option, "");
             }
 
-            // Threads
-            if (useThreads == 1) {
-                pthread_t thread_id;
-                char* command = (char*)malloc(sizeof(char) * 2048);
-
-                strcpy(command, ls);
-                strcat(command, " ");
-                strcat(command, path);
-                strcat(command, " ");
-                strcat(command, option);
-
-                pthread_create(&thread_id, NULL, runThread, command);
-                pthread_join(thread_id, NULL);
+            
+            if (fork() == 0) {
+                execl(list, list, path, option, NULL);
+                break;
             }
-            // FORK Process
             else {
-                if (fork() == 0) {
-                    execl(ls, ls, path, option, NULL);
-                    break;
-                }
-                else {
-                    wait(NULL);
-                }
+                wait(NULL);
             }
+            
         }
 
         // date
@@ -304,20 +280,7 @@ int main(int argc, char** argv) {
             }
 
 
-            // Threads
-            if (useThreads == 1) {
-                pthread_t thread_id;
-                char* command = (char*)malloc(sizeof(char) * 2048);
-
-                strcpy(command, date);
-                strcat(command, " ");
-                strcat(command, option);
-
-                pthread_create(&thread_id, NULL, runThread, command);
-                pthread_join(thread_id, NULL);
-            }
-            // FORK Process
-            else {
+            
                 if (fork() == 0) {
                     execl(date, date, option, NULL);
                     break;
@@ -325,153 +288,61 @@ int main(int argc, char** argv) {
                 else {
                     wait(NULL);
                 }
-            }
+            
         }
 
         // rm
-        else if (strcmp(input[0], "rm") == 0) {
+        else if (strcmp(input[0], "remove_dir") == 0) {
             char tmp[FILENAME_MAX];
             char* currPath = getcwd(tmp, FILENAME_MAX);
 
-            // Threads
-            if (useThreads == 1) {
-                pthread_t thread_id;
-                char* command = (char*)malloc(sizeof(char) * 2048);
-
-                strcpy(command, rm);
-                strcat(command, " ");
-                strcat(command, currPath);
-                strcat(command, " ");
-                strcat(command, input[1][0] != '\0' ? input[1] : "");
-                strcat(command, " ");
-                strcat(command, input[2][0] != '\0' ? input[2] : "");
-                strcat(command, " ");
-                strcat(command, input[3][0] != '\0' ? input[3] : "");
-                strcat(command, " ");
-                strcat(command, input[4][0] != '\0' ? input[4] : "");
-                strcat(command, " ");
-                strcat(command, input[5][0] != '\0' ? input[5] : "");
-                strcat(command, " ");
-                strcat(command, input[6][0] != '\0' ? input[6] : "");
-                strcat(command, " ");
-                strcat(command, input[7][0] != '\0' ? input[7] : "");
-                strcat(command, " ");
-                strcat(command, input[8][0] != '\0' ? input[8] : "");
-                strcat(command, " ");
-                strcat(command, input[9][0] != '\0' ? input[9] : "");
-
-
-                pthread_create(&thread_id, NULL, runThread, command);
-                pthread_join(thread_id, NULL);
-            }
-            // FORK Process
-            else {
+            
+            
                 if (fork() == 0) {
-                    execl(rm, rm, currPath, input[1][0] != '\0' ? input[1] : "", input[2][0] != '\0' ? input[2] : "", input[3][0] != '\0' ? input[3] : "", input[4][0] != '\0' ? input[4] : "", input[5][0] != '\0' ? input[5] : "", input[6][0] != '\0' ? input[6] : "", input[7][0] != '\0' ? input[7] : "", input[8][0] != '\0' ? input[8] : "", input[9][0] != '\0' ? input[9] : "", NULL);
+                    execl(remove_dir, remove_dir, currPath, input[1][0] != '\0' ? input[1] : "", input[2][0] != '\0' ? input[2] : "", input[3][0] != '\0' ? input[3] : "", input[4][0] != '\0' ? input[4] : "", input[5][0] != '\0' ? input[5] : "", input[6][0] != '\0' ? input[6] : "", input[7][0] != '\0' ? input[7] : "", input[8][0] != '\0' ? input[8] : "", input[9][0] != '\0' ? input[9] : "", NULL);
                     break;
                 }
                 else {
                     wait(NULL);
                 }
-            }
+            
         }
 
         // cat
-        else if (strcmp(input[0], "cat") == 0) {
+        else if (strcmp(input[0], "display") == 0) {
             char tmp[FILENAME_MAX];
             char* currPath = getcwd(tmp, FILENAME_MAX);
 
 
-            // Threads
-            if (useThreads == 1) {
-                pthread_t thread_id;
-                char* command = (char*)malloc(sizeof(char) * 2048);
-
-                strcpy(command, cat);
-                strcat(command, " ");
-                strcat(command, currPath);
-                strcat(command, " ");
-                strcat(command, input[1][0] != '\0' ? input[1] : "");
-                strcat(command, " ");
-                strcat(command, input[2][0] != '\0' ? input[2] : "");
-                strcat(command, " ");
-                strcat(command, input[3][0] != '\0' ? input[3] : "");
-                strcat(command, " ");
-                strcat(command, input[4][0] != '\0' ? input[4] : "");
-                strcat(command, " ");
-                strcat(command, input[5][0] != '\0' ? input[5] : "");
-                strcat(command, " ");
-                strcat(command, input[6][0] != '\0' ? input[6] : "");
-                strcat(command, " ");
-                strcat(command, input[7][0] != '\0' ? input[7] : "");
-                strcat(command, " ");
-                strcat(command, input[8][0] != '\0' ? input[8] : "");
-                strcat(command, " ");
-                strcat(command, input[9][0] != '\0' ? input[9] : "");
-
-
-                pthread_create(&thread_id, NULL, runThread, command);
-                pthread_join(thread_id, NULL);
-            }
-            // FORK Process
-            else {
+            
+        
                 if (fork() == 0) {
-                    execl(cat, cat, currPath, input[1][0] != '\0' ? input[1] : "", input[2][0] != '\0' ? input[2] : "", input[3][0] != '\0' ? input[3] : "", input[4][0] != '\0' ? input[4] : "", input[5][0] != '\0' ? input[5] : "", input[6][0] != '\0' ? input[6] : "", input[7][0] != '\0' ? input[7] : "", input[8][0] != '\0' ? input[8] : "", input[9][0] != '\0' ? input[9] : "", NULL);
+                    execl(display, display, currPath, input[1][0] != '\0' ? input[1] : "", input[2][0] != '\0' ? input[2] : "", input[3][0] != '\0' ? input[3] : "", input[4][0] != '\0' ? input[4] : "", input[5][0] != '\0' ? input[5] : "", input[6][0] != '\0' ? input[6] : "", input[7][0] != '\0' ? input[7] : "", input[8][0] != '\0' ? input[8] : "", input[9][0] != '\0' ? input[9] : "", NULL);
                     break;
                 }
                 else {
                     wait(NULL);
                 }
-            }
+            
         }
 
         // mkdir
-        else if (strcmp(input[0], "mkdir") == 0) {
+        else if (strcmp(input[0], "make_dir") == 0) {
             char tmp[FILENAME_MAX];
             char* currPath = getcwd(tmp, FILENAME_MAX);
 
 
-            // Threads
-            if (useThreads == 1) {
-                pthread_t thread_id;
-                char* command = (char*)malloc(sizeof(char) * 2048);
-
-                strcpy(command, mkdir);
-                strcat(command, " ");
-                strcat(command, currPath);
-                strcat(command, " ");
-                strcat(command, input[1][0] != '\0' ? input[1] : "");
-                strcat(command, " ");
-                strcat(command, input[2][0] != '\0' ? input[2] : "");
-                strcat(command, " ");
-                strcat(command, input[3][0] != '\0' ? input[3] : "");
-                strcat(command, " ");
-                strcat(command, input[4][0] != '\0' ? input[4] : "");
-                strcat(command, " ");
-                strcat(command, input[5][0] != '\0' ? input[5] : "");
-                strcat(command, " ");
-                strcat(command, input[6][0] != '\0' ? input[6] : "");
-                strcat(command, " ");
-                strcat(command, input[7][0] != '\0' ? input[7] : "");
-                strcat(command, " ");
-                strcat(command, input[8][0] != '\0' ? input[8] : "");
-                strcat(command, " ");
-                strcat(command, input[9][0] != '\0' ? input[9] : "");
-
-
-                pthread_create(&thread_id, NULL, runThread, command);
-                pthread_join(thread_id, NULL);
-            }
+            
             // FORK Process
-            else {
+            
                 if (fork() == 0) {
-                    execl(mkdir, mkdir, currPath, input[1][0] != '\0' ? input[1] : "", input[2][0] != '\0' ? input[2] : "", input[3][0] != '\0' ? input[3] : "", input[4][0] != '\0' ? input[4] : "", input[5][0] != '\0' ? input[5] : "", input[6][0] != '\0' ? input[6] : "", input[7][0] != '\0' ? input[7] : "", input[8][0] != '\0' ? input[8] : "", input[9][0] != '\0' ? input[9] : "", NULL);
+                    execl(make_dir, make_dir, currPath, input[1][0] != '\0' ? input[1] : "", input[2][0] != '\0' ? input[2] : "", input[3][0] != '\0' ? input[3] : "", input[4][0] != '\0' ? input[4] : "", input[5][0] != '\0' ? input[5] : "", input[6][0] != '\0' ? input[6] : "", input[7][0] != '\0' ? input[7] : "", input[8][0] != '\0' ? input[8] : "", input[9][0] != '\0' ? input[9] : "", NULL);
                     break;
                 }
                 else {
                     wait(NULL);
                 }
-            }
+            
         }
 
         
