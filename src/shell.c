@@ -6,12 +6,15 @@
 #include <sys/wait.h>
 #include <pthread.h>
 
+
+
 /////////////////////////////// Global variables ///////////////////////////////
 char* username;
 char hostname[1024];
 
 #define NUM_WORDS 10            // Max number of word in the input  
 #define WORD_LEN 100            // Max number of letters in a word of input
+#define BUFFER_SIZE 1024
 
 char input[NUM_WORDS][WORD_LEN];
 
@@ -69,6 +72,87 @@ void prompt() {
 
     printf(CYAN BOLD"\n█\ue0b0 " RESET);
     takeInput();
+}
+
+void sendEmail(const char *sender, const char *password, const char *recipient, const char *subject, const char *body) {
+    char command[2048];
+    snprintf(command, sizeof(command),
+             "python3 send_email.py --sender \"%s\" --password \"%s\" --recipient \"%s\" --subject \"%s\" --body \"%s\"",
+             sender, password, recipient, subject, body);
+    system(command);
+}
+
+int copy_paste() {
+    char source_path[256];
+    char destination_path[256];
+
+    // Ask for source and destination paths
+    printf("Enter the path of the file to copy: ");
+    fgets(source_path, sizeof(source_path), stdin);
+    source_path[strcspn(source_path, "\n")] = 0; // Remove newline
+
+    printf("Enter the destination directory: ");
+    fgets(destination_path, sizeof(destination_path), stdin);
+    destination_path[strcspn(destination_path, "\n")] = 0; // Remove newline
+
+    // Open source file
+    FILE *source_file = fopen(source_path, "rb");
+    if (!source_file) {
+        perror("Error opening source file");
+        return -1;
+    }
+
+    // Construct the destination file path
+    char destination_file_path[512];
+    snprintf(destination_file_path, sizeof(destination_file_path), "%s/%s", destination_path, strrchr(source_path, '/') + 1);
+
+    // Open destination file
+    FILE *dest_file = fopen(destination_file_path, "wb");
+    if (!dest_file) {
+        perror("Error opening destination file");
+        fclose(source_file);
+        return -1;
+    }
+
+    // Copy content from source to destination
+    char buffer[BUFFER_SIZE];
+    size_t bytes;
+    while ((bytes = fread(buffer, 1, BUFFER_SIZE, source_file)) > 0) {
+        fwrite(buffer, 1, bytes, dest_file);
+    }
+
+    fclose(source_file);
+    fclose(dest_file);
+    printf("File copied to '%s'.\n", destination_file_path);
+    return 0;
+}
+
+// Function to move (cut and paste) a file from source to destination
+int cut_paste() {
+    char source_path[256];
+    char destination_path[256];
+
+    // Ask for source and destination paths
+    printf("Enter the path of the file to move: ");
+    fgets(source_path, sizeof(source_path), stdin);
+    source_path[strcspn(source_path, "\n")] = 0; // Remove newline
+
+    printf("Enter the destination directory: ");
+    fgets(destination_path, sizeof(destination_path), stdin);
+    destination_path[strcspn(destination_path, "\n")] = 0; // Remove newline
+
+    // Construct the destination file path
+    char destination_file_path[512];
+    snprintf(destination_file_path, sizeof(destination_file_path), "%s/%s", destination_path, strrchr(source_path, '/') + 1);
+
+    // Use rename function to move the file
+    if (rename(source_path, destination_file_path) != 0) {
+        perror("Error moving file");
+        return -1;
+    }
+
+    printf("File moved to '%s'.\n", destination_file_path);
+    return 0;
 }
 
 ///////////////////////////////// Main Function ////////////////////////////////
@@ -140,19 +224,21 @@ int main(int argc, char** argv) {
 
         // cd
         else if (strcmp(input[0], "change_dir") == 0) {
-            if (strcmp(input[1], "-P") == 0) {
-                if (chdir(input[1]) != 0) {
-                    printf(RED BOLD "Error: " RESET);
-                    printf("no such file or directory\n");
+            char path[1024] = {0}; 
+            for (int i = 1; i < NUM_WORDS && input[i][0] != '\0'; i++) {
+                strcat(path, input[i]); 
+                if (i < NUM_WORDS - 1 && input[i + 1][0] != '\0') {
+                    strcat(path, " "); 
                 }
             }
-            else {
-                if (chdir(input[1]) != 0) {
-                    printf(RED BOLD "Error: " RESET);
-                    printf("no such file or directory\n");
-                }
+            if (chdir(path) != 0) {
+                printf(RED BOLD "Error: " RESET);
+                printf("no such file or directory: '%s'\n", path);
             }
         }
+
+        
+        
 
         // pwd
         else if (strcmp(input[0], "working_dir") == 0) {
@@ -344,14 +430,80 @@ int main(int argc, char** argv) {
                 }
             
         }
+        else if (strcmp(input[0], "send-email") == 0) {
+            char sender[256];
+            char password[256];
+            char recipient[256];
+            char subject[256];
+            char body[1024];
 
+            printf("Enter sender email: ");
+            fgets(sender, sizeof(sender), stdin);
+            sender[strcspn(sender, "\n")] = 0;
+
+            printf("Enter sender email password: ");
+            fgets(password, sizeof(password), stdin);
+            password[strcspn(password, "\n")] = 0;
+
+            printf("Enter recipient email: ");
+            fgets(recipient, sizeof(recipient), stdin);
+            recipient[strcspn(recipient, "\n")] = 0;
+
+            printf("Enter subject: ");
+            fgets(subject, sizeof(subject), stdin);
+            subject[strcspn(subject, "\n")] = 0;
+
+            printf("Enter email body: ");
+            fgets(body, sizeof(body), stdin);
+            body[strcspn(body, "\n")] = 0;
+
+            sendEmail(sender, password, recipient, subject, body);
+        }           
+
+        else if (strcmp(input[0], "copy_paste") == 0) {
+            copy_paste();
+        } 
+        else if (strcmp(input[0], "cut_paste") == 0) {
+            cut_paste();
+        }
         
+        else if (strcmp(input[0], "send-email") == 0){
+            char sender[256];
+            char password[256];
+            char recipient[256];
+            char subject[256];
+            char body[1024];
+
+            printf("Enter sender email: ");
+            fgets(sender, sizeof(sender), stdin);
+            sender[strcspn(sender, "\n")] = 0;
+
+            printf("Enter sender email password: ");
+            fgets(password, sizeof(password), stdin);
+            password[strcspn(password, "\n")] = 0;
+
+            printf("Enter recipient email: ");
+            fgets(recipient, sizeof(recipient), stdin);
+            recipient[strcspn(recipient, "\n")] = 0;
+
+            printf("Enter subject: ");
+            fgets(subject, sizeof(subject), stdin);
+            subject[strcspn(subject, "\n")] = 0;
+
+            printf("Enter email body: ");
+            fgets(body, sizeof(body), stdin);
+            body[strcspn(body, "\n")] = 0;
+
+            sendEmail(sender, password, recipient, subject, body);
+            
+
+        }
         else {
             printf(RED BOLD "ERROR: " RESET);
             printf("Command not found\n");
         }
     }
-
+        
 
     return 0;
 }
