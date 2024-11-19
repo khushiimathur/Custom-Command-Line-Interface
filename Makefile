@@ -32,6 +32,10 @@ out/remove_dir: src/remove_dir.c
 	@gcc -o out/remove_dir src/remove_dir.c
 	@echo "Compiled remove_dir"
 	
+out/convert: src/convert.c
+	@mkdir -p out
+	@gcc -o out/convert src/convert.c
+	@echo "Compiled convert"
 
 clean:
 	@rm -rf out

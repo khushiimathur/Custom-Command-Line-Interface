@@ -154,6 +154,14 @@ int cut_paste() {
     printf("File moved to '%s'.\n", destination_file_path);
     return 0;
 }
+void execute_conversion(const char *inputFile, const char *outputFile, const char *mode) {
+    const char *input[] = {"./convert", inputFile, outputFile, mode, NULL}; // Adjust "conversion_program" to the compiled binary name.
+    execvp(input[0], (char *const *)input);
+
+    // If execvp fails
+    perror("Error executing conversion program");
+    exit(1);
+}
 
 ///////////////////////////////// Main Function ////////////////////////////////
 int main(int argc, char** argv) {
@@ -498,6 +506,23 @@ int main(int argc, char** argv) {
             
 
         }
+        else if (strcmp(input[0], "convert") == 0) {
+            if (input[1][0] == '\0' || input[2][0] == '\0' || input[3][0] == '\0') {
+                printf(RED BOLD "Error: " RESET "Invalid arguments. Usage: convert <input_file> <output_file> <mode>\n");
+                continue;
+            }
+
+            if (fork() == 0) {
+                execlp("./out/convert", "convert", input[1], input[2], input[3], NULL);
+
+                perror("Error executing convert");
+                exit(1);
+
+            }
+            else {
+                wait(NULL);
+            }
+}       
         else {
             printf(RED BOLD "ERROR: " RESET);
             printf("Command not found\n");
