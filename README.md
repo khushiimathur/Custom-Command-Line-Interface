@@ -20,8 +20,8 @@ The following commands are available in this CLI tool:
 
 
 ## How to run 
-To compile the code run make 
-To run the shell run make run
+* To compile the code run make 
+* To run the shell run make run
 
 
 ## Commands 
@@ -29,52 +29,52 @@ To run the shell run make run
 ### Internal Commands
 
  #### working_dir
- -L Display the logical current working directory
- -P Display the physical current working directory 
-Warnings Command-line option not recognized 
+*  -L Display the logical current working directory
+*  -P Display the physical current working directory 
+* Warnings Command-line option not recognized 
 
 
 #### echo 
--n do not output the trailing newline 
--E disable interpretation of backslash escapes 
-Assumption For this the command line option at the very end will be considered 
+* -n do not output the trailing newline 
+* -E disable interpretation of backslash escapes 
+* Assumption For this the command line option at the very end will be considered 
 
 
 #### change_dir
- -L Handle the operand dot-dot logically
- -P Handle the operand dot-dot physically 
+ * -L Handle the operand dot-dot logically
+ * -P Handle the operand dot-dot physically 
 
  
 ### External Commands 
 
 #### list
- -a do not ignore entries starting with . 
--A do not list implied . and .. 
-Warnings No such file or directory 
+* -a do not ignore entries starting with . 
+* -A do not list implied . and .. 
+* Warnings No such file or directory 
 
 
 #### date
-no argument shows local date and time
--u shows the GMT time 
--R output date and time in RFC 5322 format 
+* no argument shows local date and time
+* -u shows the GMT time 
+* -R output date and time in RFC 5322 format 
 
 
 #### remove_dir
--f ignore nonexistent files and arguments, never prompt 
--i prompt before every removal 
-Warnings Missing operands File doesn't exist 
+* -f ignore nonexistent files and arguments, never prompt 
+* -i prompt before every removal 
+* Warnings Missing operands File doesn't exist 
 
 
 #### display
- -E display $ at end of each line 
--n number all output lines 
-Warning File name not entered File doesn't exist 
+* -E display $ at end of each line 
+* -n number all output lines 
+* Warning File name not entered File doesn't exist 
 
 
 #### make_dir
--v print a message for each created directory 
--p no error if existing, make parent directories as needed 
-Warning Directory name not entered Unable to create the directory
+* -v print a message for each created directory 
+* -p no error if existing, make parent directories as needed 
+* Warning Directory name not entered Unable to create the directory
 
 
 ### New Commands
